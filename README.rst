@@ -45,12 +45,43 @@ the content of your code than formatting it properly.
 Install pre-commit
 ~~~~~~~~~~~~~~~~~~
 
-Install the pre-commit hook running the script below inside the project root directory:
+Install the pre-commit hook running the script below inside the project root
+directory:
 
 .. code:: sh
+
     cat <<EOF > .git/hooks/pre-commit
     #!/bin/sh
     black --check .
     EOF
     chmod +x .git/hooks/pre-commit
 
+Coding standards
+----------------
+
+Naming stuff
+~~~~~~~~~~~~
+
+Whenever in doubt, prefer nouns in singular:
+
+- DO write view.py
+- do NOT write views.py
+- DO create table user
+- do NOT create table users
+
+Importing stuff
+~~~~~~~~~~~~~~~
+
+We always import the modules and avoid rebinding the symbol names:
+
+- DO import datetime
+- do NOT from datetime import timedelta
+- DO import collections.abc as abc
+- do NOT from collections import abc
+
+We group imports in 3 sections, in the following order. Within each section,
+imports should be lexically sorted:
+
+1. Standard library
+2. 3rd party library
+3. Our own code
