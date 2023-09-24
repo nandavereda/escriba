@@ -21,3 +21,36 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>
+
+Contributing
+------------
+
+We adopt git hooks via pre-commit in order to run formatting before the
+commit process. This approach has some really nice advantages:
+
+- IDE agnostic
+- Runs automatically (i.e. unforgivable) on the code that is changing
+- Enforces style consistency in the codebase
+- Prevent style bikeshedding
+- Helps create smaller diffs
+
+Why Black?
+~~~~~~~~~~
+
+Black is a highly opinionated code formatter. Black focuses on reformatting
+your code files in place for you. When you're comfortable with black taking
+over the minutiae of hand formatting you will see that you can focus more on
+the content of your code than formatting it properly.
+
+Install pre-commit
+~~~~~~~~~~~~~~~~~~
+
+Install the pre-commit hook running the script below inside the project root directory:
+
+.. code:: sh
+    cat <<EOF > .git/hooks/pre-commit
+    #!/bin/sh
+    black --check .
+    EOF
+    chmod +x .git/hooks/pre-commit
+

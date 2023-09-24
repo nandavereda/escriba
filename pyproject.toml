@@ -20,5 +20,28 @@ classifiers = [
 requires-python = ">=3.11"
 version = "0.0.1"
 
+[project.optional-dependencies]
+dev = [
+    "black",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+exclude = '''
+(
+  /(
+      \.git          # exclude a few common directories in the
+    | \.venv         # root of the project
+    | \.mypy_cache
+    | build
+    | dist
+    | docs
+    | __pycache__
+  )/
+)
+'''
+
 [tool.setuptools_scm]
 write_to = "escriba/_version.py"
+
