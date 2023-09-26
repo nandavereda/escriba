@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/static/style.css" />
+  <title>{% block title %}{% endblock %} | Escriba</title>
+</head>
+<body>
+  <header>
+    <nav role="navigation" aria-label="Main menu">
+      {% macro nav_attr(endpoint) -%}
+      {% if request.endpoint==endpoint %} class="active"{% endif %} href="{{ url_for(endpoint) }}"
+      {%- endmacro %}
+      <ul>
+        <li><a{{ nav_attr('dashboard.index_view') }}>Salvar URLs</a></li>
+      </ul>
+    </nav>
+    {% block header %}{% endblock %}
+  </header>
+  <main role="main">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer role="contentinfo">
+    <p>Versão exclusivamente de demonstração. Todos os direitos reservados.</p>
+  </footer>
+  <aside role="complementary">
+    <!-- Nada aqui ainda -->
+  </aside>
+</body>
+</html>

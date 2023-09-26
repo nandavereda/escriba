@@ -1,0 +1,80 @@
+/* General */
+* {
+    /* Remove default styles */
+    margin:0;
+    padding:0;
+    border:0;
+    line-height:1.4;
+}
+@media (min-width:900px) {
+    body {font-size:1.2em}
+}
+h1 {font-size:1.5em;margin:.4em 0}
+h2 {font-size:1.3em;margin:.4em 0}
+h3 {font-size:1.1em;margin:.4em 0}
+button, input, label, select, textarea {
+    font-family:inherit;
+    font-size:100%;
+    box-sizing:border-box;
+}
+
+
+/* Navigation */
+header nav {font-size:1em}
+header nav ul {
+	list-style-type:none;
+	overflow:hidden;
+	background-color:#7A432C;
+}
+header nav ul li {float:left}
+header nav ul li a {
+	display:block;
+	color:white;
+	padding:.5em;
+	text-decoration:none;
+}
+header nav ul li a:hover:not(.active) {
+    /* Change the link color on hover */
+    background-color:#321C17
+}
+header nav ul li a.active {background-color:#A65F42}
+
+header h1{margin:1vw}
+header p {margin:.5vw 1vw}
+
+/* Main Section */
+main {font-size:1em;text-align:left;margin:0 1vw}
+main form {text-align:center}
+main form button {
+    border-width:thin;
+    border-style:solid;
+    border-radius:.3em;
+    padding:.1em .5em;
+    margin:.4em;
+}
+/* TODO hover effect on buttons */
+main iframe {
+    border-width:thin;
+    border-style:solid;
+    border-radius:.3em;
+}
+main form textarea {
+    border-width:thin;
+    border-style:solid;
+    border-radius:.3em;
+    padding:.1em;
+    font-size:.8em
+}
+main p {
+    /* Maximum width of 65characters */
+    max-width: 65ch;
+}
+main textarea {width:100%;resize:both;overflow:auto}
+@media (min-width:900px) {
+    main textarea {width:900px}
+}
+/* FIXME li:marker disappeared with overflow:hidden */
+main ul {margin-left:0.8em;overflow:hidden}
+
+/* Footer */
+footer {font-size:0.8em;text-align:center;margin:2vw}

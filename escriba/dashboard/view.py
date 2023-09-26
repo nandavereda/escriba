@@ -20,11 +20,26 @@ import logging
 
 import flask
 
+import escriba.db as db
+import escriba.dao.transfer as transfer
+
 logger = logging.getLogger(__name__)
 
 bp = flask.Blueprint("dashboard", __name__)
 
 
-@bp.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+@bp.route("/", methods=["GET", "POST"])
+def index_view():
+    if flask.request.method == "POST":
+        urls = flask.request.form["urls"]
+        # TODO assert user input has lower and upper boundaries
+        with db.connect() as con:
+            _ = transfer.create_transfer(con, user_input=urls)
+            con.commit()
+
+        return flask.redirect(flask.url_for("dashboard.index_view"))
+
+    with db.connect() as con:
+        transfers = transfer.listmany(con, 10)
+
+    return flask.render_template("index.html", transfers=transfers)

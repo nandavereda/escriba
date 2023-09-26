@@ -1,0 +1,18 @@
+{% if transfers %}
+<table id="transfer-table">
+  <tr>
+    <th>UID</th>
+    <th>Hora de criação</th>
+    <th>Conteúdo</th>
+  </tr>
+  {% for transfer in transfers %}
+  <tr>
+    <td><a href="/transfer/{{ transfer['uid'] }}">{{ transfer['uid'] }}</a></td>
+    <td>{{ transfer['creation_time'] }}</td>
+    <td>{{ transfer['user_input'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Nada aqui por enquanto!</p>
+{% endif %}
