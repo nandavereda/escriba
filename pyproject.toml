@@ -19,6 +19,9 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 version = "0.0.1"
+dependencies = [
+    "flask",
+]
 
 [project.optional-dependencies]
 dev = [
