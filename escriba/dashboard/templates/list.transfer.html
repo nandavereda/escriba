@@ -8,7 +8,7 @@
   {% for transfer in transfers %}
   <tr>
     <td><a href="/transfer/{{ transfer['uid'] }}">{{ transfer['uid'] }}</a></td>
-    <td>{{ transfer['creation_time'] }}</td>
+    <td><time datetime="{{ transfer['creation_time'] }}" title="{{ transfer['creation_time'] }}">{{ transfer['creation_time'] }}</time></td>
     <td>{{ transfer['user_input'] }}</td>
   </tr>
   {% endfor %}
