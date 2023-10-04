@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Transferência: {{ transfer.uid }}{% endblock %}
+
+{% block content %}
+
+<p>Hora de criação: {{ transfer.creation_time }}</p>
+
+{% include 'list.webpage.html' %}
+
+{% endblock %}

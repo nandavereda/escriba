@@ -26,36 +26,58 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
-def create_transfer(connection, *, user_input: str) -> str:
-    uid = uuid.uuid4().hex
+def create_transfer(connection, *, user_input: str) -> uuid.UUID:
+    uid = uuid.uuid4()
     connection.execute(
         "INSERT INTO transfer (uid, user_input) VALUES (:uid, :user_input);",
-        dict(uid=uid, user_input=user_input),
+        dict(uid=uid.hex, user_input=user_input),
     )
     return uid
 
 
-def _read_transfer(connection):
-    return connection.execute("SELECT * from transfer ORDER BY creation_time DESC")
+def _read_transfer(connection, *, uid: uuid.UUID = None):
+    if uid:
+        cursor = connection.execute(
+            "SELECT * from transfer WHERE uid=:uid", dict(uid=uid.hex)
+        )
+    else:
+        cursor = connection.execute(
+            "SELECT * from transfer ORDER BY creation_time DESC"
+        )
+    return cursor
 
 
 @dataclasses.dataclass
 class Transfer:
-    uid: str
+    uid: uuid.UUID
     creation_time: datetime.datetime
     user_input: str
 
+    @classmethod
+    def from_row(cls, row: sqlite3.Row):
+        return cls(**_fields_from_row(row))
 
-def _transfer_from_row(row: sqlite3.Row):
-    fields = dict(
-        uid=str(uuid.UUID(row["uid"])),
+
+def _fields_from_row(row: sqlite3.Row):
+    return dict(
+        uid=uuid.UUID(row["uid"]),
         creation_time=datetime.datetime.fromisoformat(row["creation_time"]),
         user_input=row["user_input"],
     )
-    return Transfer(**fields)
 
 
 def listmany(connection, size: int) -> typing.Tuple[Transfer, ...]:
-    return tuple(
-        _transfer_from_row(row) for row in _read_transfer(connection).fetchmany(size)
-    )
+    cursor = _read_transfer(connection)
+    return tuple(Transfer.from_row(row) for row in cursor.fetchmany(size))
+
+
+def get(connection, transfer_uid: uuid.UUID) -> Transfer:
+    cursor = _read_transfer(connection, uid=transfer_uid)
+    row = cursor.fetchone()
+    return Transfer.from_row(row)
+
+
+async def aget(connection, transfer_uid: uuid.UUID) -> Transfer:
+    cursor = await _read_transfer(connection, uid=transfer_uid)
+    row = await cursor.fetchone()
+    return Transfer.from_row(row)

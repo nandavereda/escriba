@@ -7,9 +7,9 @@
   </tr>
   {% for transfer in transfers %}
   <tr>
-    <td><a href="/transfer/{{ transfer['uid'] }}">{{ transfer['uid'] }}</a></td>
-    <td><time datetime="{{ transfer['creation_time'] }}" title="{{ transfer['creation_time'] }}">{{ transfer['creation_time'] }}</time></td>
-    <td>{{ transfer['user_input'] }}</td>
+    <td><a href="/transfer/{{ transfer.uid }}">{{ transfer.uid }}</a></td>
+    <td><time datetime="{{ transfer.creation_time }}" title="{{ transfer.creation_time }}">{{ transfer.creation_time }}</time></td>
+    <td><textarea readonly rows="1">{{ transfer.user_input }}</textarea></td>
   </tr>
   {% endfor %}
 </table>

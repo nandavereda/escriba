@@ -1,0 +1,16 @@
+{% if webpages %}
+<table id="webpages-table">
+  <tr>
+    <th>UID</th>
+    <th>URL</th>
+  </tr>
+  {% for webpage in webpages %}
+  <tr>
+    <td><a href="/webpage/{{ webpage.uid }}">{{ webpage.uid }}</a></td>
+    <td><textarea readonly rows="1">{{ webpage.alt_title }}</textarea></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Nada aqui por enquanto!</p>
+{% endif %}

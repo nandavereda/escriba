@@ -21,7 +21,7 @@ import logging
 import flask
 
 import escriba.db as db
-import escriba.dao.transfer as transfer
+import escriba.dao as dao
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +34,28 @@ def index_view():
         urls = flask.request.form["urls"]
         # TODO assert user input has lower and upper boundaries
         with db.connect() as con:
-            _ = transfer.create_transfer(con, user_input=urls)
+            transfer_uid = dao.transfer.create_transfer(con, user_input=urls)
+            job_state_uid = dao.job.JobState.PENDING
+            _ = dao.transfer_job.create_transfer_job(
+                con,
+                transfer_uid=transfer_uid,
+                job_state_uid=job_state_uid,
+            )
             con.commit()
 
         return flask.redirect(flask.url_for("dashboard.index_view"))
 
     with db.connect() as con:
-        transfers = transfer.listmany(con, 10)
+        transfers = dao.transfer.listmany(con, 10)
 
     return flask.render_template("index.html", transfers=transfers)
+
+
+@bp.route("/transfer/<uuid:transfer_uid>")
+def transfer_view(transfer_uid):
+    with db.connect() as con:
+        transfer = dao.transfer.get(con, transfer_uid=transfer_uid)
+        webpages = dao.webpage.listmany_by_transfer_uid(
+            con, 10, transfer_uid=transfer_uid
+        )
+    return flask.render_template("transfer.html", transfer=transfer, webpages=webpages)
