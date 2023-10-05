@@ -8,7 +8,7 @@
   {% for snapshot in snapshots %}
   <tr>
     <td><p>{{ snapshot.strategy.name }}</p></td>
-    <td><p>{{ snapshot.job_state.name }}</p></td>
+    <td><p>{{ render_state(snapshot.job_state) }}</p></td>
   </tr>
   {% endfor %}
 </table>

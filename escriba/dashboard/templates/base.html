@@ -36,6 +36,19 @@
     </ul>
     {% endif %}
     {% endwith %}
+
+    {% macro render_state(state) %}
+    {% if state.name == "SUCCEEDED" -%}
+    <p>&#x2714; Finalizado com sucesso</p>
+    {%- elif state.name == "FAILED" -%}
+    <p>&#x2718; Finalizado com falha</p>
+    {%- elif state.name == "EXECUTING" -%}
+    <p>&#x231B; Em progresso</p>
+    {%- elif state.name == "PENDING" -%}
+    <p>&#x1F4DD; Pendente</p>
+    {%- endif %}
+    {% endmacro %}
+
     {% block content %}{% endblock %}
   </main>
   <footer role="contentinfo">
