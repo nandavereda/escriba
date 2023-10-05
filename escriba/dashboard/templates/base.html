@@ -49,6 +49,13 @@
     {%- endif %}
     {% endmacro %}
 
+    {% macro render_ctime(entity) %}
+    <time datetime="{{ entity.creation_time }}" title="{{ entity.creation_time }}">{{ entity.creation_time }}</time>
+    {% endmacro %}
+    {% macro render_mtime(entity) %}
+    <time datetime="{{ entity.modification_time }}" title="{{ entity.modification_time }}">{{ entity.modification_time }}</time>
+    {% endmacro %}
+
     {% block content %}{% endblock %}
   </main>
   <footer role="contentinfo">

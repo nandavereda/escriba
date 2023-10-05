@@ -5,7 +5,7 @@
 {% block content %}
 
 <p>URL: {{ webpage.safetitle }}</p>
-<p>Hora de cadastro: <time datetime="{{ webpage.creation_time }}" title="{{ webpage.creation_time }}">{{ webpage.creation_time }}</time></p>
+<p>Hora de cadastro: {{ render_ctime(webpage) }}</p>
 
 {% include 'list.snapshot.html' %}
 

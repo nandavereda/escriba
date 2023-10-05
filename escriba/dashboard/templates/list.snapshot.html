@@ -4,11 +4,15 @@
   <tr>
     <th>Método</th>
     <th>Situação</th>
+    <th>Hora de criação</th>
+    <th>Hora de modificação</th>
   </tr>
   {% for snapshot in snapshots %}
   <tr>
     <td><p>{{ snapshot.strategy.name }}</p></td>
     <td><p>{{ render_state(snapshot.job_state) }}</p></td>
+    <td>{{ render_ctime(snapshot) }}</td>
+    <td>{{ render_mtime(snapshot) }}</td>
   </tr>
   {% endfor %}
 </table>
