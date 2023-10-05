@@ -19,7 +19,6 @@
 import asyncio
 import logging
 import typing
-import urllib.parse
 
 import escriba.db as db
 import escriba.dao as dao
@@ -27,52 +26,47 @@ import escriba.dao as dao
 logger = logging.getLogger(__name__)
 
 
-def _identify_transfer_urls(
-    urls: str,
-) -> typing.Generator[urllib.parse.SplitResult, None, None]:
-    for urlline in urls.splitlines():
-        urlline_stripped = urlline.strip()
-        if not urlline_stripped:
-            continue
-        yield urllib.parse.urlsplit(urlline_stripped)
+def _identity_archive_strategies(
+    *_,
+) -> typing.Generator[dao.strategy.Strategy, None, None]:
+    # dummy. return all known strategies
+    yield from dao.strategy.Strategy
 
 
 async def run(*, interval: int):
     async with db.connect() as con:
         # Must clean the dirty state before starting the real loop.
-        while jobs := await dao.transfer_job.listmany_by_state(
+        while jobs := await dao.webpage_job.listmany_by_state(
             con, 100, job_state=dao.job.JobState.PENDING
         ):
             for job in jobs:
-                await dao.transfer_job.update(
+                await dao.webpage_job.update(
                     con, uid=job.uid, job_state=dao.job.JobState.FAILED
                 )
             await con.commit()
 
         while True:
-            if job := await dao.transfer_job.get_by_state(
+            if job := await dao.webpage_job.get_by_state(
                 con, job_state=dao.job.JobState.PENDING
             ):
-                await dao.transfer_job.update(
+                await dao.webpage_job.update(
                     con,
                     uid=job.uid,
                     job_state=dao.job.JobState.EXECUTING,
                 )
                 await con.commit()
 
-                transfer = await dao.transfer.aget(con, uid=job.transfer_uid)
-                for url in _identify_transfer_urls(transfer.user_input):
-                    webpage_uid = await dao.webpage.create(
-                        con, url=url, transfer_job_uid=job.uid
-                    )
-                    _ = await dao.webpage_job.create(
+                webpage = await dao.webpage.aget(con, uid=job.webpage_uid)
+                for strategy in _identity_archive_strategies(webpage.url):
+                    _ = await dao.snapshot.create(
                         con,
-                        webpage_uid=webpage_uid,
+                        webpage_uid=webpage.uid,
+                        strategy=strategy,
                         job_state=dao.job.JobState.PENDING,
                     )
                 await con.commit()
 
-                await dao.transfer_job.update(
+                await dao.webpage_job.update(
                     con,
                     uid=job.uid,
                     job_state=dao.job.JobState.SUCCEEDED,

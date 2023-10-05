@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class TransferJob:
+class WebpageJob:
     uid: uuid.UUID
     creation_time: datetime.datetime
-    transfer_uid: uuid.UUID
+    webpage_uid: uuid.UUID
     job_state: enum.Enum
     modified_time: typing.Optional[datetime.datetime] = None
 
@@ -42,34 +42,40 @@ class TransferJob:
         return cls(**_fields_from_row(row))
 
 
-def create(
-    connection, *, transfer_uid: uuid.UUID, job_state_uid: enum.Enum
+async def create(
+    connection, *, webpage_uid: uuid.UUID, job_state: enum.Enum
 ) -> uuid.UUID:
     uid = uuid.uuid4()
-    connection.execute(
-        "INSERT INTO transfer_job (uid, transfer_uid, job_state_uid)"
-        " VALUES (:uid, :transfer_uid, :job_state_uid);",
-        dict(
-            uid=uid.hex,
-            transfer_uid=transfer_uid.hex,
-            job_state_uid=job_state_uid.value,
-        ),
-    )
+    await _create(connection, uid=uid, job_state=job_state, webpage_uid=webpage_uid)
     return uid
 
 
-def _read_by_transfer(connection, *, transfer_uid: uuid.UUID):
+def _create(
+    connection, *, uid: uuid.UUID, job_state: enum.Enum, webpage_uid: uuid.UUID
+):
     return connection.execute(
-        "SELECT * from transfer_job"
-        " WHERE transfer_uid=:transfer_uid"
+        "INSERT INTO webpage_job (uid, webpage_uid, job_state_uid)"
+        " VALUES (:uid, :webpage_uid, :job_state_uid);",
+        dict(
+            uid=uid.hex,
+            webpage_uid=webpage_uid.hex,
+            job_state_uid=job_state.value,
+        ),
+    )
+
+
+def _read_by_webpage(connection, *, webpage_uid: uuid.UUID):
+    return connection.execute(
+        "SELECT * from webpage_job"
+        " WHERE webpage_uid=:webpage_uid"
         " ORDER BY creation_time DESC",
-        dict(transfer_uid=transfer_uid.hex),
+        dict(webpage_uid=webpage_uid.hex),
     )
 
 
 def _read_by_state(connection, *, job_state: enum.Enum):
     return connection.execute(
-        "SELECT * from transfer_job"
+        "SELECT * from webpage_job"
         " WHERE job_state_uid=:job_state_uid"
         " ORDER BY creation_time DESC",
         dict(job_state_uid=job_state.value),
@@ -81,39 +87,39 @@ def _fields_from_row(row: sqlite3.Row):
         uid=uuid.UUID(row["uid"]),
         creation_time=datetime.datetime.fromisoformat(row["creation_time"]),
         job_state=dao.job.JobState(row["job_state_uid"]),
-        transfer_uid=uuid.UUID(row["transfer_uid"]),
+        webpage_uid=uuid.UUID(row["webpage_uid"]),
     )
     if raw_modified_time := row["modified_time"]:
         fields["modified_time"] = datetime.datetime.fromisoformat(raw_modified_time)
     return fields
 
 
-def listmany_by_transfer(
-    connection, size: int, *, transfer_uid: uuid.UUID
-) -> typing.Tuple[TransferJob, ...]:
-    cursor = _read_by_transfer(connection, transfer_uid=transfer_uid)
-    return tuple(TransferJob.from_row(row) for row in cursor.fetchmany(size))
+def listmany_by_webpage(
+    connection, size: int, *, webpage_uid: uuid.UUID
+) -> typing.Tuple[WebpageJob, ...]:
+    cursor = _read_by_webpage(connection, webpage_uid=webpage_uid)
+    return tuple(WebpageJob.from_row(row) for row in cursor.fetchmany(size))
 
 
 async def get_by_state(
     connection, *, job_state: enum.Enum
-) -> typing.Optional[TransferJob]:
+) -> typing.Optional[WebpageJob]:
     cursor = await _read_by_state(connection, job_state=job_state)
     if row := await cursor.fetchone():
-        return TransferJob.from_row(row)
+        return WebpageJob.from_row(row)
 
 
-def _update_state_by_uid(connection, *, uid: uuid.UUID, job_state: enum.Enum):
+def _update_state(connection, *, uid: uuid.UUID, job_state: enum.Enum):
     return connection.execute(
-        "UPDATE transfer_job SET job_state_uid=:job_state_uid WHERE uid=:uid",
+        "UPDATE webpage_job SET job_state_uid=:job_state_uid WHERE uid=:uid",
         dict(uid=uid.hex, job_state_uid=job_state.value),
     )
 
 
 async def update(connection, *, uid: uuid.UUID, job_state: enum.Enum):
-    await _update_state_by_uid(connection, uid=uid, job_state=job_state)
+    await _update_state(connection, uid=uid, job_state=job_state)
 
 
 async def listmany_by_state(connection, size: int, *, job_state: enum.Enum):
     cursor = await _read_by_state(connection, job_state=job_state)
-    return tuple(TransferJob.from_row(row) for row in cursor.fetchmany(size))
+    return tuple(WebpageJob.from_row(row) for row in cursor.fetchmany(size))

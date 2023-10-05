@@ -59,7 +59,7 @@ class Webpage:
         return cls(**_fields_from_row(row))
 
 
-async def create_webpage(
+async def create(
     connection, *, url: urllib.parse.SplitResult, transfer_job_uid: uuid.UUID
 ):
     url = urllib.parse.urlunsplit(url)
@@ -83,10 +83,10 @@ async def create_webpage(
     return uid
 
 
-def listmany_by_transfer_uid(
+def listmany_by_transfer(
     connection, size: int, *, transfer_uid: uuid.UUID
 ) -> typing.Tuple[Webpage, ...]:
-    cursor = _read_webpage_by_transfer_uid(connection, transfer_uid=transfer_uid)
+    cursor = _read_by_transfer(connection, transfer_uid=transfer_uid)
     return tuple(Webpage.from_row(row) for row in cursor.fetchmany(size))
 
 
@@ -103,7 +103,7 @@ def _fields_from_row(row: sqlite3.Row):
     return fields
 
 
-def _read_webpage_by_transfer_uid(connection, *, transfer_uid: uuid.UUID):
+def _read_by_transfer(connection, *, transfer_uid: uuid.UUID):
     return connection.execute(
         "SELECT w.*, a.transfer_job_uid, j.transfer_uid from webpage as w"
         " JOIN webpage_transfer_job_association as a ON a.webpage_uid=w.uid"
@@ -112,3 +112,13 @@ def _read_webpage_by_transfer_uid(connection, *, transfer_uid: uuid.UUID):
         " ORDER BY w.creation_time DESC",
         dict(transfer_uid=transfer_uid.hex),
     )
+
+
+def _read(connection, *, uid: uuid.UUID):
+    return connection.execute("SELECT * FROM webpage WHERE uid=:uid", dict(uid=uid.hex))
+
+
+async def aget(connection, uid: uuid.UUID) -> Webpage:
+    cursor = await _read(connection, uid=uid)
+    row = await cursor.fetchone()
+    return Webpage.from_row(row)

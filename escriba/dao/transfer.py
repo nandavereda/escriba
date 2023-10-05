@@ -26,7 +26,7 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
-def create_transfer(connection, *, user_input: str) -> uuid.UUID:
+def create(connection, *, user_input: str) -> uuid.UUID:
     uid = uuid.uuid4()
     connection.execute(
         "INSERT INTO transfer (uid, user_input) VALUES (:uid, :user_input);",
@@ -35,7 +35,7 @@ def create_transfer(connection, *, user_input: str) -> uuid.UUID:
     return uid
 
 
-def _read_transfer(connection, *, uid: uuid.UUID = None):
+def _read(connection, *, uid: uuid.UUID = None):
     if uid:
         cursor = connection.execute(
             "SELECT * from transfer WHERE uid=:uid", dict(uid=uid.hex)
@@ -67,17 +67,17 @@ def _fields_from_row(row: sqlite3.Row):
 
 
 def listmany(connection, size: int) -> typing.Tuple[Transfer, ...]:
-    cursor = _read_transfer(connection)
+    cursor = _read(connection)
     return tuple(Transfer.from_row(row) for row in cursor.fetchmany(size))
 
 
-def get(connection, transfer_uid: uuid.UUID) -> Transfer:
-    cursor = _read_transfer(connection, uid=transfer_uid)
+def get(connection, uid: uuid.UUID) -> Transfer:
+    cursor = _read(connection, uid=uid)
     row = cursor.fetchone()
     return Transfer.from_row(row)
 
 
-async def aget(connection, transfer_uid: uuid.UUID) -> Transfer:
-    cursor = await _read_transfer(connection, uid=transfer_uid)
+async def aget(connection, uid: uuid.UUID) -> Transfer:
+    cursor = await _read(connection, uid=uid)
     row = await cursor.fetchone()
     return Transfer.from_row(row)

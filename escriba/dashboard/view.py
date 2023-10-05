@@ -34,9 +34,9 @@ def index_view():
         urls = flask.request.form["urls"]
         # TODO assert user input has lower and upper boundaries
         with db.connect() as con:
-            transfer_uid = dao.transfer.create_transfer(con, user_input=urls)
+            transfer_uid = dao.transfer.create(con, user_input=urls)
             job_state_uid = dao.job.JobState.PENDING
-            _ = dao.transfer_job.create_transfer_job(
+            _ = dao.transfer_job.create(
                 con,
                 transfer_uid=transfer_uid,
                 job_state_uid=job_state_uid,
@@ -54,8 +54,6 @@ def index_view():
 @bp.route("/transfer/<uuid:transfer_uid>")
 def transfer_view(transfer_uid):
     with db.connect() as con:
-        transfer = dao.transfer.get(con, transfer_uid=transfer_uid)
-        webpages = dao.webpage.listmany_by_transfer_uid(
-            con, 10, transfer_uid=transfer_uid
-        )
+        transfer = dao.transfer.get(con, uid=transfer_uid)
+        webpages = dao.webpage.listmany_by_transfer(con, 10, transfer_uid=transfer_uid)
     return flask.render_template("transfer.html", transfer=transfer, webpages=webpages)

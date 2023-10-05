@@ -16,10 +16,27 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-import escriba.dao.job as job
-import escriba.dao.snapshot as snapshot
-import escriba.dao.strategy as strategy
-import escriba.dao.transfer as transfer
-import escriba.dao.transfer_job as transfer_job
-import escriba.dao.webpage as webpage
-import escriba.dao.webpage_job as webpage_job
+import enum
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class Strategy(enum.Enum):
+    title = 1
+    favicon = 2
+    wget = 3
+    curl = 4
+    warc = 5
+
+    pdf = 10
+    screenshot = 11
+    dom = 12
+    singlefile = 13
+    readability = 14
+    mercury = 15
+
+    git = 20
+    ytdlp = 21
+
+    archivedotorg = 30
