@@ -115,7 +115,20 @@ def _read_by_transfer(connection, *, transfer_uid: uuid.UUID):
 
 
 def _read(connection, *, uid: uuid.UUID):
-    return connection.execute("SELECT * FROM webpage WHERE uid=:uid", dict(uid=uid.hex))
+    return connection.execute(
+        "SELECT w.*, a.transfer_job_uid, j.transfer_uid from webpage as w"
+        " JOIN webpage_transfer_job_association as a ON a.webpage_uid=w.uid"
+        " JOIN transfer_job as j ON j.uid=a.transfer_job_uid"
+        " WHERE w.uid=:uid"
+        " ORDER BY w.creation_time DESC",
+        dict(uid=uid.hex),
+    )
+
+
+def get(connection, uid: uuid.UUID) -> Webpage:
+    cursor = _read(connection, uid=uid)
+    row = cursor.fetchone()
+    return Webpage.from_row(row)
 
 
 async def aget(connection, uid: uuid.UUID) -> Webpage:

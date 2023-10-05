@@ -30,7 +30,9 @@ logger = logging.getLogger(__name__)
 def _identify_transfer_urls(
     urls: str,
 ) -> typing.Generator[urllib.parse.SplitResult, None, None]:
-    for urlline in urls.splitlines():
+    # We assume that duplicate URLs in the same transfer are a mistake,
+    # so we simply remove the duplicates with a set() operation.
+    for urlline in set(urls.splitlines()):
         urlline_stripped = urlline.strip()
         if not urlline_stripped:
             continue

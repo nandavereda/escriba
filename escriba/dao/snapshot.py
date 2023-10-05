@@ -35,7 +35,7 @@ class Snapshot:
     creation_time: datetime.datetime
     webpage_uid: uuid.UUID
     job_state: enum.Enum
-    strategy_uid: enum.Enum
+    strategy: enum.Enum
     modified_time: typing.Optional[datetime.datetime] = None
     result: str = None
 

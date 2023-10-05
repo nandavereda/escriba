@@ -122,4 +122,4 @@ async def update(connection, *, uid: uuid.UUID, job_state: enum.Enum):
 
 async def listmany_by_state(connection, size: int, *, job_state: enum.Enum):
     cursor = await _read_by_state(connection, job_state=job_state)
-    return tuple(WebpageJob.from_row(row) for row in cursor.fetchmany(size))
+    return tuple(WebpageJob.from_row(row) for row in await cursor.fetchmany(size))

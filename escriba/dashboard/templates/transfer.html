@@ -4,7 +4,8 @@
 
 {% block content %}
 
-<p>Hora de criação: {{ transfer.creation_time }}</p>
+<p>Hora de cadastro: <time datetime="{{ transfer.creation_time }}" title="{{ transfer.creation_time }}">{{ transfer.creation_time }}</time></p>
+<textarea readonly id="urls" name="urls" rows="5" wrap="off">{{ transfer.user_input }}</textarea>
 
 {% include 'list.webpage.html' %}
 

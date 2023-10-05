@@ -46,7 +46,7 @@ def index_view():
         return flask.redirect(flask.url_for("dashboard.index_view"))
 
     with db.connect() as con:
-        transfers = dao.transfer.listmany(con, 10)
+        transfers = dao.transfer.listmany(con, 20)
 
     return flask.render_template("index.html", transfers=transfers)
 
@@ -55,5 +55,13 @@ def index_view():
 def transfer_view(transfer_uid):
     with db.connect() as con:
         transfer = dao.transfer.get(con, uid=transfer_uid)
-        webpages = dao.webpage.listmany_by_transfer(con, 10, transfer_uid=transfer_uid)
+        webpages = dao.webpage.listmany_by_transfer(con, 20, transfer_uid=transfer_uid)
     return flask.render_template("transfer.html", transfer=transfer, webpages=webpages)
+
+
+@bp.route("/webpage/<uuid:webpage_uid>")
+def webpage_view(webpage_uid):
+    with db.connect() as con:
+        webpage = dao.webpage.get(con, uid=webpage_uid)
+        snapshots = dao.snapshot.listmany_by_webpage(con, 20, webpage_uid=webpage_uid)
+    return flask.render_template("webpage.html", webpage=webpage, snapshots=snapshots)

@@ -102,8 +102,8 @@ DROP TABLE IF EXISTS snapshot;
 CREATE TABLE snapshot (
     uid TEXT PRIMARY KEY,
     webpage_uid TEXT NOT NULL,
-    strategy_uid TEXT NOT NULL,
-    job_state_uid TEXT NOT NULL,
+    strategy_uid INTEGER NOT NULL,
+    job_state_uid INTEGER NOT NULL,
     creation_time TEXT DEFAULT (CURRENT_TIMESTAMP || '+00:00') NOT NULL,
     modified_time TEXT,
     result TEXT,

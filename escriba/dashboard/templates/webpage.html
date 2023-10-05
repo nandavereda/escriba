@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Página da Web: {{ webpage.uid }}{% endblock %}
+
+{% block content %}
+
+<p>URL: {{ webpage.safetitle }}</p>
+<p>Hora de cadastro: <time datetime="{{ webpage.creation_time }}" title="{{ webpage.creation_time }}">{{ webpage.creation_time }}</time></p>
+
+{% include 'list.snapshot.html' %}
+
+{% endblock %}

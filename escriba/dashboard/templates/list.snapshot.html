@@ -1,0 +1,17 @@
+<h2>Cópias recentes</h2>
+{% if snapshots %}
+<table id="snapshots-table">
+  <tr>
+    <th>Método</th>
+    <th>Situação</th>
+  </tr>
+  {% for snapshot in snapshots %}
+  <tr>
+    <td><p>{{ snapshot.strategy.name }}</p></td>
+    <td><p>{{ snapshot.job_state.name }}</p></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Nada aqui por enquanto!</p>
+{% endif %}

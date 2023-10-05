@@ -16,6 +16,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-import escriba.daemon.scheduler as scheduler
-import escriba.daemon.transfer_job_worker as transfer_job_worker
-import escriba.daemon.webpage_job_worker as webpage_job_worker
+import asyncio
+
+import escriba.daemon as daemon
+
+
+async def run():
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(daemon.transfer_job_worker.run(interval=3))
+        tg.create_task(daemon.webpage_job_worker.run(interval=1))
