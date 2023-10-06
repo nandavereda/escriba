@@ -120,6 +120,8 @@ async def update(connection, *, uid: uuid.UUID, job_state: enum.Enum):
     await _update_state(connection, uid=uid, job_state=job_state)
 
 
-async def listmany_by_state(connection, size: int, *, job_state: enum.Enum):
-    cursor = await _read_by_state(connection, job_state=job_state)
-    return tuple(WebpageJob.from_row(row) for row in await cursor.fetchmany(size))
+async def update_state(connection, old_state: enum.Enum, new_state: enum.Enum):
+    return await connection.execute(
+        "UPDATE webpage_job SET job_state_uid=:old_uid WHERE job_state_uid=:new_uid",
+        dict(old_uid=old_state.value, new_uid=new_state.value),
+    )

@@ -42,14 +42,10 @@ def _identify_transfer_urls(
 async def run(*, interval: int):
     async with db.connect() as con:
         # Must clean the dirty state before starting the real loop.
-        while jobs := await dao.transfer_job.listmany_by_state(
-            con, 100, job_state=dao.job.JobState.PENDING
-        ):
-            for job in jobs:
-                await dao.transfer_job.update(
-                    con, uid=job.uid, job_state=dao.job.JobState.FAILED
-                )
-            await con.commit()
+        await dao.transfer_job.update_state(
+            con, old_state=dao.job.JobState.EXECUTING, new_state=dao.job.JobState.FAILED
+        )
+        await con.commit()
 
         while True:
             if job := await dao.transfer_job.get_by_state(
