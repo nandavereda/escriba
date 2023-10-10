@@ -22,6 +22,7 @@ version = "0.0.1"
 dependencies = [
     "aiosqlite",
     "flask",
+    "pyzmq",
 ]
 
 [project.optional-dependencies]
