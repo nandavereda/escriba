@@ -133,5 +133,32 @@ def _update_state_by_uid(connection, *, uid: uuid.UUID, job_state: enum.Enum):
     )
 
 
-async def update(connection, *, uid: uuid.UUID, job_state: enum.Enum):
-    await _update_state_by_uid(connection, uid=uid, job_state=job_state)
+def _update_result_by_uid(
+    connection, *, uid: uuid.UUID, job_state: enum.Enum, result: typing.Optional[str]
+):
+    return connection.execute(
+        "UPDATE snapshot SET job_state_uid=:job_state_uid,result=:result WHERE uid=:uid",
+        dict(uid=uid.hex, job_state_uid=job_state.value, result=result),
+    )
+
+
+async def update_state(connection, old_state: enum.Enum, new_state: enum.Enum):
+    return await connection.execute(
+        "UPDATE snapshot SET job_state_uid=:new_uid WHERE job_state_uid=:old_uid",
+        dict(old_uid=old_state.value, new_uid=new_state.value),
+    )
+
+
+async def update(
+    connection,
+    *,
+    uid: uuid.UUID,
+    job_state: enum.Enum,
+    result: typing.Optional[str] = None,
+):
+    if result:
+        await _update_result_by_uid(
+            connection, uid=uid, job_state=job_state, result=result
+        )
+    else:
+        await _update_state_by_uid(connection, uid=uid, job_state=job_state)

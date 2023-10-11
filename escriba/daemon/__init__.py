@@ -16,6 +16,8 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
+import escriba.daemon.agent as agent
 import escriba.daemon.scheduler as scheduler
+import escriba.daemon.snapshot_job_worker as snapshot_job_worker
 import escriba.daemon.transfer_job_worker as transfer_job_worker
 import escriba.daemon.webpage_job_worker as webpage_job_worker

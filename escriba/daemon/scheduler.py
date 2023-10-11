@@ -19,9 +19,16 @@
 import asyncio
 
 import escriba.daemon as daemon
+import escriba.messaging as messaging
 
 
 async def run():
     async with asyncio.TaskGroup() as tg:
+        # all these may become independent processes running under supervisord
+        tg.create_task(daemon.agent.run(endpoint="tcp://localhost:5555"))
+        tg.create_task(
+            daemon.snapshot_job_worker.run(interval=1, endpoint="tcp://localhost:5555")
+        )
         tg.create_task(daemon.transfer_job_worker.run(interval=3))
         tg.create_task(daemon.webpage_job_worker.run(interval=1))
+        tg.create_task(messaging.broker.run("tcp://*:5555"))

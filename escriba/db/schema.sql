@@ -130,23 +130,24 @@ CREATE TABLE strategy (
     name TEXT NOT NULL
 );
 INSERT INTO strategy (uid, name) VALUES
-    (1, "title"),
-    (2, "favicon"),
-    (3, "wget"),
-    (4, "curl"),
-    (5, "warc"),
+    (1, "archive-dot-org"),
+    (2, "title"),
+    (3, "favicon"),
 
-    (10, "pdf"),
-    (11, "screenshot"),
-    (12, "dom"),
-    (13, "singlefile"),
-    (14, "readability"),
-    (15, "mercury"),
+    (10, "curl"),
+    (11, "wget"),
+    (12, "warc"),
 
-    (20, "git"),
-    (21, "yt-dlp"),
+    (20, "pdf"),
+    (21, "screenshot"),
+    (22, "dom"),
 
-    (30, "archive-dot-org")
+    (30, "singlefile"),
+    (31, "readability"),
+    (32, "mercury"),
+
+    (40, "git"),
+    (41, "yt-dlp")
 ;
 --------------------------
 --END script transaction--

@@ -23,20 +23,26 @@ logger = logging.getLogger(__name__)
 
 
 class Strategy(enum.Enum):
-    title = 1
-    favicon = 2
-    wget = 3
-    curl = 4
-    warc = 5
+    # informational extractors
+    archivedotorg = 1
+    title = 2
+    favicon = 3
 
-    pdf = 10
-    screenshot = 11
-    dom = 12
-    singlefile = 13
-    readability = 14
-    mercury = 15
+    # simple extractors
+    curl = 10
+    wget = 11
+    warc = 12
 
-    git = 20
-    ytdlp = 21
+    # comprehensive extractors
+    pdf = 20
+    screenshot = 21
+    dom = 22
 
-    archivedotorg = 30
+    # post-processing capable extractors
+    singlefile = 30
+    readability = 31
+    mercury = 32
+
+    # specialized extractors
+    git = 40
+    ytdlp = 41

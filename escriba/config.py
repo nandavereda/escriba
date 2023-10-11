@@ -17,6 +17,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import os
+import typing
+
+
+def get_node_services() -> typing.Generator[typing.Tuple[str, int, str], None, None]:
+    if services := os.environ.get("ESCRIBA_SERVICES"):
+        for name, concur, program in (s.split(":") for s in services.split(",")):
+            yield name, int(concur), program
 
 
 DB_URI = os.environ.get("ESCRIBA_DB_URI", ":memory:")
