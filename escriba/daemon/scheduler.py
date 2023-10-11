@@ -24,11 +24,15 @@ import escriba.messaging as messaging
 
 async def run():
     async with asyncio.TaskGroup() as tg:
-        # all these may become independent processes running under supervisord
+        # These tasks share no state in memory and communicate only by
+        # database and/or network messages. All these may become
+        # independent processes running under supervisord:
         tg.create_task(daemon.agent.run(endpoint="tcp://localhost:5555"))
+        tg.create_task(daemon.internet_archive.run(interval=1))
         tg.create_task(
-            daemon.snapshot_job_worker.run(interval=1, endpoint="tcp://localhost:5555")
+            daemon.snapshot_job.run(interval=1, endpoint="tcp://localhost:5555")
         )
-        tg.create_task(daemon.transfer_job_worker.run(interval=3))
-        tg.create_task(daemon.webpage_job_worker.run(interval=1))
+        tg.create_task(daemon.title.run(interval=1))
+        tg.create_task(daemon.transfer_job.run(interval=3))
+        tg.create_task(daemon.webpage_job.run(interval=1))
         tg.create_task(messaging.broker.run("tcp://*:5555"))

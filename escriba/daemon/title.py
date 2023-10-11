@@ -16,10 +16,28 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
-import escriba.daemon.agent as agent
-import escriba.daemon.internet_archive as internet_archive
-import escriba.daemon.scheduler as scheduler
-import escriba.daemon.snapshot_job as snapshot_job
-import escriba.daemon.title as title
-import escriba.daemon.transfer_job as transfer_job
-import escriba.daemon.webpage_job as webpage_job
+import asyncio
+import logging
+
+import escriba.db as db
+import escriba.dao as dao
+
+logger = logging.getLogger(__name__)
+
+
+async def run(*, interval: int):
+    async with db.connect() as con:
+        while True:
+            for job in await dao.snapshot.listmany_ready_for_title_update(
+                con,
+                100,
+            ):
+                logger.debug("Got job ready for title update %s", job)
+                if not (title := job.stdout):
+                    logger.warning("Job [ %s ] succeeded, but found no title.", job.uid)
+                await dao.webpage.update_title(
+                    con, uid=job.webpage_uid, title=title.strip()
+                )
+                await con.commit()
+
+            await asyncio.sleep(interval)

@@ -35,9 +35,11 @@ class Snapshot:
     creation_time: datetime.datetime
     webpage_uid: uuid.UUID
     job_state: enum.Enum
-    strategy: enum.Enum
+    strategy: "dao.strategy.Strategy"
     modified_time: typing.Optional[datetime.datetime] = None
     result: str = None
+    stdout: str = None
+    stderr: str = None
 
     @classmethod
     def from_row(cls, row: sqlite3.Row):
@@ -108,6 +110,10 @@ def _fields_from_row(row: sqlite3.Row):
         fields["modified_time"] = datetime.datetime.fromisoformat(raw_modified_time)
     if raw_result := row["result"]:
         fields["result"] = raw_result
+    if raw_stdout := row["stdout"]:
+        fields["stdout"] = raw_stdout
+    if raw_stderr := row["stderr"]:
+        fields["stderr"] = raw_stderr
     return fields
 
 
@@ -134,11 +140,25 @@ def _update_state_by_uid(connection, *, uid: uuid.UUID, job_state: enum.Enum):
 
 
 def _update_result_by_uid(
-    connection, *, uid: uuid.UUID, job_state: enum.Enum, result: typing.Optional[str]
+    connection,
+    *,
+    uid: uuid.UUID,
+    job_state: enum.Enum,
+    result: str,
+    stdout: typing.Optional[str] = None,
+    stderr: typing.Optional[str] = None,
 ):
     return connection.execute(
-        "UPDATE snapshot SET job_state_uid=:job_state_uid,result=:result WHERE uid=:uid",
-        dict(uid=uid.hex, job_state_uid=job_state.value, result=result),
+        "UPDATE snapshot"
+        " SET job_state_uid=:job_state_uid,result=:result,stdout=:stdout,stderr=:stderr"
+        " WHERE uid=:uid",
+        dict(
+            uid=uid.hex,
+            job_state_uid=job_state.value,
+            result=result,
+            stdout=stdout,
+            stderr=stderr,
+        ),
     )
 
 
@@ -155,10 +175,50 @@ async def update(
     uid: uuid.UUID,
     job_state: enum.Enum,
     result: typing.Optional[str] = None,
+    stdout: typing.Optional[str] = None,
+    stderr: typing.Optional[str] = None,
 ):
     if result:
         await _update_result_by_uid(
-            connection, uid=uid, job_state=job_state, result=result
+            connection,
+            uid=uid,
+            job_state=job_state,
+            result=result,
+            stdout=stdout,
+            stderr=stderr,
         )
     else:
         await _update_state_by_uid(connection, uid=uid, job_state=job_state)
+
+
+async def listmany_ready_for_title_update(
+    connection, size: int
+) -> typing.Tuple[Snapshot, ...]:
+    cursor = await connection.execute(
+        "SELECT s.* from snapshot as s"
+        " JOIN webpage as w ON s.webpage_uid=w.uid"
+        " JOIN job_state as j ON s.job_state_uid=j.uid"
+        " JOIN strategy as t on s.strategy_uid=t.uid"
+        " WHERE j.name='SUCCEEDED'"
+        " AND t.name='title'"
+        " AND w.title is NULL"
+        " ORDER BY s.creation_time DESC"
+    )
+    return tuple(Snapshot.from_row(row) for row in await cursor.fetchmany(size))
+
+
+async def listmany_ready_for_archivedotorg_update(
+    connection, size: int
+) -> typing.Tuple[Snapshot, ...]:
+    cursor = await connection.execute(
+        "SELECT s.* from snapshot as s"
+        " JOIN webpage as w ON s.webpage_uid=w.uid"
+        " JOIN job_state as j ON s.job_state_uid=j.uid"
+        " JOIN strategy as t on s.strategy_uid=t.uid"
+        " WHERE j.name='SUCCEEDED'"
+        " AND t.name='internet_archive'"
+        " AND w.internet_archive is NULL"
+        " AND json_extract(result, '$.rc')=0"
+        " ORDER BY s.creation_time DESC"
+    )
+    return tuple(Snapshot.from_row(row) for row in await cursor.fetchmany(size))

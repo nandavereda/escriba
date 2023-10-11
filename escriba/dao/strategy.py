@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class Strategy(enum.Enum):
     # informational extractors
-    archivedotorg = 1
+    internet_archive = 1
     title = 2
     favicon = 3
 
@@ -46,3 +46,22 @@ class Strategy(enum.Enum):
     # specialized extractors
     git = 40
     ytdlp = 41
+
+    @property
+    def timeout(self) -> int:
+        if self.value < 20:  # informational or simple strategies
+            timeout = 90
+        elif self.value < 40:  # browser mimicking strategies
+            timeout = 180
+
+        # specialized extractors
+        elif self == self.git:
+            timeout = 180
+        elif self == self.ytdlp:
+            timeout = 3600
+
+        # undefined
+        else:
+            timeout = 60
+
+        return timeout

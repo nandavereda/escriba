@@ -17,9 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import asyncio
+import json
 import logging
 import typing
 import urllib.parse
+import uuid
 
 import escriba.db as db
 import escriba.dao as dao
@@ -33,16 +35,13 @@ async def _archive_file(
     request: typing.List[str],
     snapshot: dao.snapshot.Snapshot,
     timeout: int,
-):
+) -> typing.Tuple[uuid.UUID, typing.Optional[typing.List[str]]]:
     client = messaging.client.Client(endpoint, timeout=timeout)
 
     await client.send(snapshot.strategy.name, request)
 
     reply = await client.recv()
-    if not reply:
-        raise RuntimeError("No response received.")
-    result = "\n".join(reply)
-    return snapshot.uid, result
+    return snapshot.uid, reply
 
 
 async def run(*, interval: int, endpoint: str):
@@ -65,11 +64,11 @@ async def run(*, interval: int, endpoint: str):
 
                 webpage = await dao.webpage.aget(con, uid=job.webpage_uid)
                 url = urllib.parse.urlunsplit(webpage.url)
-                logger.debug("Launching tasks.")
-                # launch tasks
-                # executing |= {asyncio.get_running_loop().create_task(
+
                 task = asyncio.create_task(
-                    _archive_file(endpoint, [job.strategy.name, url], job, 30)
+                    _archive_file(
+                        endpoint, [job.strategy.name, url], job, job.strategy.timeout
+                    )
                 )
                 executing |= {task}
 
@@ -80,16 +79,29 @@ async def run(*, interval: int, endpoint: str):
                 )
 
                 logger.debug("Collecting results.")
-                # Collect results and ensure exceptions within the coroutine are re-raised
+                # Collect results and ensure exceptions within the coroutine are raised
                 for future in done:
-                    uid, result = await future
-                    await dao.snapshot.update(
-                        con,
-                        uid=uid,
-                        job_state=dao.job.JobState.SUCCEEDED,
-                        result=result,
-                    )
+                    uid, reply = await future
+                    job_state = dao.job.JobState.FAILED
+                    if reply:
+                        raw_result, stdout, stderr = reply
+                        result = json.loads(raw_result)
+                        if result["rc"] == 0:
+                            job_state = dao.job.JobState.SUCCEEDED
+                        await dao.snapshot.update(
+                            con,
+                            uid=uid,
+                            job_state=job_state,
+                            result=raw_result,
+                            stdout=stdout,
+                            stderr=stderr,
+                        )
+                    else:
+                        await dao.snapshot.update(
+                            con,
+                            uid=uid,
+                            job_state=job_state,
+                        )
                     await con.commit()
             else:
-                logger.debug("Awaiting for next iteration.")
                 await asyncio.sleep(interval)

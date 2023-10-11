@@ -70,11 +70,11 @@ class MajorDomoBase:
 
     def dump(self, msg):
         """Log each message frame neatly"""
-        self.logger.info("----------------------------------------")
+        self.logger.debug("----------------------------------------")
         for part in msg:
             line = "[%03d] " % len(part)
             try:
                 line += part.decode("ascii")
             except UnicodeDecodeError:
                 line += r"0x%s" % binascii.hexlify(part).decode("ascii")
-            self.logger.info(line)
+            self.logger.debug(line)

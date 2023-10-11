@@ -35,6 +35,7 @@ class Webpage:
     transfer_job_uid: uuid.UUID
     transfer_uid: uuid.UUID
     title: typing.Optional[str] = None
+    internet_archive: typing.Optional[urllib.parse.SplitResult] = None
     modified_time: typing.Optional[datetime.datetime] = None
     alt_title: str = dataclasses.field(init=False)
 
@@ -100,6 +101,10 @@ def _fields_from_row(row: sqlite3.Row):
     )
     if raw_modified_time := row["modified_time"]:
         fields["modified_time"] = datetime.datetime.fromisoformat(raw_modified_time)
+    if raw_title := row["title"]:
+        fields["title"] = raw_title
+    if raw_internet_archive := row["internet_archive"]:
+        fields["internet_archive"] = urllib.parse.urlsplit(raw_internet_archive)
     return fields
 
 
@@ -135,3 +140,16 @@ async def aget(connection, uid: uuid.UUID) -> Webpage:
     cursor = await _read(connection, uid=uid)
     row = await cursor.fetchone()
     return Webpage.from_row(row)
+
+
+async def update_title(connection, uid: uuid.UUID, title: str):
+    await connection.execute(
+        "UPDATE webpage SET title=:title WHERE uid=:uid", dict(uid=uid.hex, title=title)
+    )
+
+
+async def update_archivedotorg(connection, uid: uuid.UUID, archived_url: str):
+    await connection.execute(
+        "UPDATE webpage SET archivedotorg=:archived_url WHERE uid=:uid",
+        dict(uid=uid.hex, archived_url=archived_url),
+    )

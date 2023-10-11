@@ -76,7 +76,7 @@ class Worker(MDP.MajorDomoBase):
         broker,
         service,
         logger: typing.Optional[logging.Logger] = None,
-        timeout: int = 2500,
+        timeout: float = 2.5,
     ):
         self.broker = broker
         self.service = service.encode()
@@ -94,7 +94,7 @@ class Worker(MDP.MajorDomoBase):
         self.socket = self.ctx.socket(zmq.DEALER)
         self.socket.linger = 0
         self.socket.connect(self.broker)
-        self.logger.warning("I: connecting to broker at %s...", self.broker)
+        self.logger.debug("I: connecting to broker at %s...", self.broker)
 
         # Register service with broker
         await self._send_to_broker(MDP.W_READY, self.service, [])
@@ -182,6 +182,8 @@ class Worker(MDP.MajorDomoBase):
                     # pop empty
                     empty = msg.pop(0)
                     assert empty == b""
+
+                    service = msg.pop(0)
 
                     return msg  # We have a request to process
                 elif command == MDP.W_HEARTBEAT:

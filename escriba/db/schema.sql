@@ -55,10 +55,11 @@ INSERT INTO job_state (uid, name) VALUES
 DROP TABLE IF EXISTS webpage;
 CREATE TABLE webpage (
   uid TEXT PRIMARY KEY,
+  creation_time TEXT DEFAULT (CURRENT_TIMESTAMP || '+00:00') NOT NULL,
+  modified_time TEXT,
   url TEXT UNIQUE NOT NULL,
   title TEXT,
-  creation_time TEXT DEFAULT (CURRENT_TIMESTAMP || '+00:00') NOT NULL,
-  modified_time TEXT
+  internet_archive TEXT
 );
 CREATE TRIGGER update_webpage_modified_time
     AFTER UPDATE
@@ -101,12 +102,14 @@ END;
 DROP TABLE IF EXISTS snapshot;
 CREATE TABLE snapshot (
     uid TEXT PRIMARY KEY,
+    creation_time TEXT DEFAULT (CURRENT_TIMESTAMP || '+00:00') NOT NULL,
+    modified_time TEXT,
     webpage_uid TEXT NOT NULL,
     strategy_uid INTEGER NOT NULL,
     job_state_uid INTEGER NOT NULL,
-    creation_time TEXT DEFAULT (CURRENT_TIMESTAMP || '+00:00') NOT NULL,
-    modified_time TEXT,
     result TEXT,
+    stdout TEXT,
+    stderr TEXT,
 
     FOREIGN KEY (webpage_uid)
         REFERENCES webpage (uid),
@@ -117,7 +120,7 @@ CREATE TABLE snapshot (
 );
 CREATE TRIGGER update_snapshot_modified_time
     AFTER UPDATE
-    OF job_state_uid,result
+    OF job_state_uid
     ON snapshot
     FOR EACH ROW
 BEGIN
@@ -130,7 +133,7 @@ CREATE TABLE strategy (
     name TEXT NOT NULL
 );
 INSERT INTO strategy (uid, name) VALUES
-    (1, "archive-dot-org"),
+    (1, "internet_archive"),
     (2, "title"),
     (3, "favicon"),
 
@@ -147,7 +150,7 @@ INSERT INTO strategy (uid, name) VALUES
     (32, "mercury"),
 
     (40, "git"),
-    (41, "yt-dlp")
+    (41, "ytdlp")
 ;
 --------------------------
 --END script transaction--
