@@ -16,8 +16,37 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
+import logging
 import os
+import sys
 import typing
+
+
+def configure_logger(log: typing.Optional[logging.Logger] = None) -> None:
+    if not log:
+        log = logging.getLogger(__package__)
+
+    if log.hasHandlers():
+        log.warning("Current handlers will not be altered.")
+    else:
+        prefered_format = "%(levelname)s:%(name)s:%(lineno)s:%(message)s"
+        formatter = logging.Formatter(prefered_format)
+        # Tip: When a handler is created, the level is set to NOTSET
+        # (which causes all messages to be processed).
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(formatter)
+        log.addHandler(handler)
+
+    # Tip: When a logger is created, the level is set to NOTSET
+    # (which causes all messages to be processed when the logger
+    # is the root logger, or delegation to the parent when the logger
+    # is a non-root logger).
+    # Note that the root logger is created with level WARNING.
+    log.setLevel(
+        os.environ.get(
+            "ESCRIBA_LOG_LEVEL", logging.getLevelName(log.getEffectiveLevel())
+        )
+    )
 
 
 def get_node_services() -> typing.Generator[typing.Tuple[str, int, str], None, None]:

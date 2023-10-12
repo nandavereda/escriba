@@ -18,11 +18,13 @@
 """
 import asyncio
 
+import escriba.config as config
 import escriba.daemon as daemon
 import escriba.messaging as messaging
 
 
 async def run():
+    config.configure_logger()
     async with asyncio.TaskGroup() as tg:
         # These tasks share no state in memory and communicate only by
         # database and/or network messages. All these may become
