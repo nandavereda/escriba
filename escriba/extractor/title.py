@@ -58,6 +58,12 @@ def _obtain_title(url: str) -> typing.Optional[str]:
     _, _, title = left.partition(b"<title>")
 
     title = title.decode()
+
+    # deal with whitespaces
+    title = "".join(title.splitlines()).strip()
+    while title.find("  ") != -1:
+        title = title.replace("  ", " ")
+
     return title
 
 

@@ -35,9 +35,7 @@ async def run(*, interval: int):
                 logger.debug("Got job ready for title update %s", job)
                 if not (title := job.stdout):
                     logger.warning("Job [ %s ] succeeded, but found no title.", job.uid)
-                await dao.webpage.update_title(
-                    con, uid=job.webpage_uid, title=title.strip()
-                )
+                await dao.webpage.update_title(con, uid=job.webpage_uid, title=title)
                 await con.commit()
 
             await asyncio.sleep(interval)
